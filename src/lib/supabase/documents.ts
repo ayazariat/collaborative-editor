@@ -1,4 +1,4 @@
-﻿import { SupabaseClient } from '@supabase/supabase-js'
+import { SupabaseClient } from '@supabase/supabase-js'
 
 export interface DocumentRow {
   id: string
@@ -18,7 +18,7 @@ export interface DocumentVersionRow {
 
 export async function fetchDocumentById(supabase: SupabaseClient, documentId: string) {
   const { data, error } = await supabase
-    .from<DocumentRow>('documents')
+    .from('documents')
     .select('*')
     .eq('id', documentId)
     .single()
@@ -36,7 +36,7 @@ export async function updateDocumentTitle(
   title: string
 ) {
   const { data, error } = await supabase
-    .from<DocumentRow>('documents')
+    .from('documents')
     .update({ title, updated_at: new Date().toISOString() })
     .eq('id', documentId)
 
@@ -52,7 +52,7 @@ export async function fetchLatestDocumentVersion(
   documentId: string
 ): Promise<DocumentVersionRow | null> {
   const { data, error } = await supabase
-    .from<DocumentVersionRow>('document_versions')
+    .from('document_versions')
     .select('*')
     .eq('document_id', documentId)
     .order('created_at', { ascending: false })
@@ -73,7 +73,7 @@ export async function saveDocumentVersion(
   encodedState: string
 ) {
   const { data, error } = await supabase
-    .from<DocumentVersionRow>('document_versions')
+    .from('document_versions')
     .insert([{ document_id: documentId, user_id: userId, content: { yjs: encodedState } }])
 
   if (error) {

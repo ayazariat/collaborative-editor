@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react'
 import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
-import { fetchLatestDocumentVersion, saveDocumentVersion } from '@/lib/supabase/documents'
 
 interface VersionHistoryProps {
   documentId: string
@@ -11,7 +10,7 @@ interface VersionHistoryProps {
 
 interface Version {
   id: string
-  content: string
+  content: string | { yjs?: string }
   created_at: string
   user_id: string
   user?: {
@@ -23,7 +22,10 @@ export default function VersionHistory({ documentId, onRestore }: VersionHistory
   const [versions, setVersions] = useState<Version[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedVersion, setSelectedVersion] = useState<Version | null>(null)
-  const supabase = createClientComponentClient()
+  const hasSupabase =
+    !!process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const supabase = hasSupabase ? createClientComponentClient() : null
 
   useEffect(() => {
     fetchVersions()
@@ -31,9 +33,16 @@ export default function VersionHistory({ documentId, onRestore }: VersionHistory
 
   const fetchVersions = async () => {
     setLoading(true)
+    if (!hasSupabase || !supabase) {
+      const raw = localStorage.getItem(`local_versions_${documentId}`)
+      const localVersions: Version[] = raw ? JSON.parse(raw) : []
+      setVersions(localVersions)
+      setLoading(false)
+      return
+    }
     try {
       const { data, error } = await supabase
-        .from<Version>('document_versions')
+        .from('document_versions')
         .select('*, user:users(email)')
         .eq('document_id', documentId)
         .order('created_at', { ascending: false })
@@ -50,8 +59,10 @@ export default function VersionHistory({ documentId, onRestore }: VersionHistory
 
   const restoreVersion = async (version: Version) => {
     if (!version.content) return
+    const encoded = typeof version.content === 'string' ? version.content : (version.content.yjs || '')
+    if (!encoded) return
     setSelectedVersion(version)
-    onRestore(version.content)
+    onRestore(encoded)
   }
 
   if (loading) {

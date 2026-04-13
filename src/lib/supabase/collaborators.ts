@@ -14,7 +14,7 @@ export async function fetchCollaborators(
   documentId: string
 ) {
   const { data, error } = await supabase
-    .from<CollaboratorRow>('collaborators')
+    .from('collaborators')
     .select('*, user:users(id,email,full_name)')
     .eq('document_id', documentId)
 
@@ -32,7 +32,7 @@ export async function addCollaborator(
   role: 'editor' | 'viewer'
 ) {
   const { data, error } = await supabase
-    .from<CollaboratorRow>('collaborators')
+    .from('collaborators')
     .insert([{ document_id: documentId, user_id: userId, role }])
     .select('*, user:users(id,email,full_name)')
     .single()
@@ -49,7 +49,7 @@ export async function removeCollaborator(
   collaboratorId: string
 ) {
   const { error } = await supabase
-    .from<CollaboratorRow>('collaborators')
+    .from('collaborators')
     .delete()
     .eq('id', collaboratorId)
 
@@ -66,7 +66,7 @@ export async function updateCollaboratorRole(
   role: 'editor' | 'viewer'
 ) {
   const { data, error } = await supabase
-    .from<CollaboratorRow>('collaborators')
+    .from('collaborators')
     .update({ role })
     .eq('id', collaboratorId)
     .select('*, user:users(id,email,full_name)')
@@ -85,7 +85,7 @@ export async function userHasAccess(
   userId: string
 ) {
   const { data, error } = await supabase
-    .from<CollaboratorRow>('collaborators')
+    .from('collaborators')
     .select('role')
     .eq('document_id', documentId)
     .eq('user_id', userId)

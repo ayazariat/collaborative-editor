@@ -24,8 +24,10 @@ function ToolbarButton({ active, title, onClick, shortcut, disabled, children }:
       onClick={onClick}
       disabled={disabled}
       title={`${title}${shortcut ? ` (${shortcut})` : ''}`}
-      className={`p-2 rounded-md transition-colors border ${
-        active ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-100'
+      className={`h-9 px-3 rounded-lg text-sm font-medium transition-all duration-150 border ${
+        active
+          ? 'bg-slate-900 text-white border-slate-900 shadow-sm'
+          : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:border-slate-300'
       } ${disabled ? 'opacity-40 cursor-not-allowed' : ''}`}
     >
       {children}
@@ -38,36 +40,35 @@ export default function Toolbar({ editor, onSummarize, onTaskExtract, onAddComme
 
   const canDo = !readOnly
 
-  const action = (cmd: () => void) => () => {
+  const action = (cmd: () => boolean) => () => {
     if (readOnly) return
     cmd()
-    editor.chain().focus().run()
   }
 
   return (
-    <div className="flex flex-wrap gap-1 p-2 bg-gray-50 border-b border-gray-200">
-      <ToolbarButton active={editor.isActive('bold')} onClick={action(() => editor.chain().focus().toggleBold())} title="Bold" shortcut="Ctrl+B" disabled={!canDo}>
+    <div className="flex flex-wrap gap-2 p-3 bg-white/80 backdrop-blur border-b border-slate-200">
+      <ToolbarButton active={editor.isActive('bold')} onClick={action(() => editor.chain().focus().toggleBold().run())} title="Bold" shortcut="Ctrl+B" disabled={!canDo}>
         B
       </ToolbarButton>
-      <ToolbarButton active={editor.isActive('italic')} onClick={action(() => editor.chain().focus().toggleItalic())} title="Italic" shortcut="Ctrl+I" disabled={!canDo}>
+      <ToolbarButton active={editor.isActive('italic')} onClick={action(() => editor.chain().focus().toggleItalic().run())} title="Italic" shortcut="Ctrl+I" disabled={!canDo}>
         I
       </ToolbarButton>
-      <ToolbarButton active={editor.isActive('strike')} onClick={action(() => editor.chain().focus().toggleStrike())} title="Strikethrough" shortcut="Ctrl+Shift+S" disabled={!canDo}>
+      <ToolbarButton active={editor.isActive('strike')} onClick={action(() => editor.chain().focus().toggleStrike().run())} title="Strikethrough" shortcut="Ctrl+Shift+S" disabled={!canDo}>
         S
       </ToolbarButton>
-      <ToolbarButton active={editor.isActive('heading', { level: 1 })} onClick={action(() => editor.chain().focus().toggleHeading({ level: 1 }))} title="H1" disabled={!canDo}>
+      <ToolbarButton active={editor.isActive('heading', { level: 1 })} onClick={action(() => editor.chain().focus().toggleHeading({ level: 1 }).run())} title="H1" disabled={!canDo}>
         H1
       </ToolbarButton>
-      <ToolbarButton active={editor.isActive('heading', { level: 2 })} onClick={action(() => editor.chain().focus().toggleHeading({ level: 2 }))} title="H2" disabled={!canDo}>
+      <ToolbarButton active={editor.isActive('heading', { level: 2 })} onClick={action(() => editor.chain().focus().toggleHeading({ level: 2 }).run())} title="H2" disabled={!canDo}>
         H2
       </ToolbarButton>
-      <ToolbarButton active={editor.isActive('bulletList')} onClick={action(() => editor.chain().focus().toggleBulletList())} title="Bullet list" disabled={!canDo}>
+      <ToolbarButton active={editor.isActive('bulletList')} onClick={action(() => editor.chain().focus().toggleBulletList().run())} title="Bullet list" disabled={!canDo}>
         •
       </ToolbarButton>
-      <ToolbarButton active={editor.isActive('orderedList')} onClick={action(() => editor.chain().focus().toggleOrderedList())} title="Numbered list" disabled={!canDo}>
+      <ToolbarButton active={editor.isActive('orderedList')} onClick={action(() => editor.chain().focus().toggleOrderedList().run())} title="Numbered list" disabled={!canDo}>
         1.
       </ToolbarButton>
-      <ToolbarButton active={editor.isActive('taskList')} onClick={action(() => editor.chain().focus().toggleTaskList())} title="Task list" disabled={!canDo}>
+      <ToolbarButton active={editor.isActive('taskList')} onClick={action(() => editor.chain().focus().toggleTaskList().run())} title="Task list" disabled={!canDo}>
         ☑
       </ToolbarButton>
       <ToolbarButton onClick={action(() => editor.chain().focus().toggleBlockquote().run())} title="Blockquote" disabled={!canDo}>

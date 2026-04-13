@@ -22,13 +22,21 @@ export default function ShareModal({ documentId, onClose }: ShareModalProps) {
   const [role, setRole] = useState<'editor' | 'viewer'>('editor')
   const [loading, setLoading] = useState(true)
   const [message, setMessage] = useState<string | null>(null)
-  const supabase = createClientComponentClient()
+  const hasSupabase =
+    !!process.env.NEXT_PUBLIC_SUPABASE_URL &&
+    !!process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  const supabase = hasSupabase ? createClientComponentClient() : null
 
   useEffect(() => {
     loadCollaborators()
   }, [documentId])
 
   const loadCollaborators = async () => {
+    if (!hasSupabase || !supabase) {
+      setLoading(false)
+      setCollaborators([])
+      return
+    }
     setLoading(true)
     try {
       const list = await fetchCollaborators(supabase, documentId)
@@ -42,6 +50,10 @@ export default function ShareModal({ documentId, onClose }: ShareModalProps) {
   }
 
   const handleAddCollaborator = async () => {
+    if (!hasSupabase || !supabase) {
+      setMessage('Local mode: sharing by email requires Supabase configuration.')
+      return
+    }
     if (!email.trim()) {
       setMessage('Please provide an email.')
       return
@@ -71,6 +83,7 @@ export default function ShareModal({ documentId, onClose }: ShareModalProps) {
   }
 
   const handleRemove = async (id: string) => {
+    if (!hasSupabase || !supabase) return
     try {
       await removeCollaborator(supabase, id)
       setCollaborators(collaborators.filter((c) => c.id !== id))
@@ -82,6 +95,7 @@ export default function ShareModal({ documentId, onClose }: ShareModalProps) {
   }
 
   const handleRoleChange = async (id: string, newRole: 'editor' | 'viewer') => {
+    if (!hasSupabase || !supabase) return
     try {
       const updated = await updateCollaboratorRole(supabase, id, newRole)
       setCollaborators(collaborators.map((c) => (c.id === id ? updated : c)))
@@ -104,6 +118,12 @@ export default function ShareModal({ documentId, onClose }: ShareModalProps) {
 
         <div className="p-4 space-y-4">
           {message && <div className="text-sm text-blue-700">{message}</div>}
+
+          {!hasSupabase && (
+            <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+              Local mode active: link sharing works, collaborator permissions require Supabase env vars.
+            </div>
+          )}
 
           <div>
             <label className="text-sm font-medium text-gray-700">Share Link</label>

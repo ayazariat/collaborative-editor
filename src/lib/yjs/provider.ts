@@ -22,7 +22,6 @@ export function getOrCreateYjsProvider(documentId: string) {
   const provider = new WebsocketProvider(WS_URL, documentId, ydoc, {
     connect: true,
     maxBackoffTime: 10000,
-    filterBcConns: true,
   })
 
   const entry: YjsProviderEntry = {

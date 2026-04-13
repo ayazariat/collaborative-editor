@@ -14,14 +14,8 @@ interface Document {
   updated_at: string
 }
 
-interface User {
-  id: string
-  email: string
-  user_metadata?: {
-    full_name?: string
-    avatar_url?: string
-  }
-}
+import type { User as SupabaseUser } from '@supabase/supabase-js'
+type User = SupabaseUser
 
 export default function HomePage() {
   const [documents, setDocuments] = useState<Document[]>([])
@@ -98,7 +92,7 @@ export default function HomePage() {
   const createDocument = async () => {
     if (hasSupabase && user) {
       try {
-        const { data, error } = await supabase
+        const { data, error } = await supabase!
           .from('documents')
           .insert([
             {
